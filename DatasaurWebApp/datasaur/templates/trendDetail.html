@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous"/>
+     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+</head>
+
+<style>
+
+</style>
+
+<body >
+
+
+<nav class="navbar navbar-expand-lg navbar-light " style="background-color:#020c22;height:101px;">
+  <a class="navbar-brand" href="#"  style="color:#416ecc;">DATASAUR</a>
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+  <div class="collapse navbar-collapse" id="navbarNav">
+    <ul class="navbar-nav">
+      <li class="nav-item active">
+        <a class="nav-link" href="/datasaur" style="color:white;">Home <span class="sr-only">(current)</span></a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="datasaur/trending" style="color:white;">Twitter Trends</a>
+      </li>
+    </ul>
+  </div>
+</nav>
+
+
+
+<div class="container">
+    <h2 style="margin-top:50px;">{{query}}</h2>
+
+    <h4 class="display" style="margin-top:80px;">Recent Tweets about {{query}}</h4>
+    <div class="card" style="overflow-y:scroll;height:500px;padding:20px;">
+        <div id="load2" style="margin:auto;"><h5>Loading...</h5></div>
+        <div class="row"  id="tweets" style="display:none;">
+        <p class="card-text"></p>
+        </div>
+   </div>
+
+    <h4 class="display" style="margin-top:80px;">Entity Recognition</h4>
+    <div class="card" style="height:300px;padding:20px;">
+        <div id="load1" style="margin:auto;"><h5>Loading...</h5></div>
+        <div class="row" id="entity" style="display:none;">
+            <div class="col-md-4" id="people">
+                <h5>People</h5>
+            </div>
+
+            <div class="col-md-4" id="place">
+                <h5 >Places</h5>
+            </div>
+
+            <div class="col-md-4" id="org">
+                <h5>Organizations</h5>
+            </div>
+
+        </div>
+    </div>
+
+     <h4 class="display" style="margin-top:80px;">Emotions  about {{query}}</h4>
+    <div class="card" style="height:400px;padding:20px;">
+         <div id="load3" style="margin:auto;"><h5>Loading...</h5></div>
+
+        <p>Joy</p>
+        <div class="progress">
+            <div class="progress-bar bg-success" id="joy" role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+        </div>
+        <p>Surprised</p>
+        <div class="progress">
+            <div class="progress-bar bg-info" id="surprised" role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+        </div>
+        <p>Fear</p>
+        <div class="progress">
+            <div class="progress-bar bg-warning" id="fear" role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+        </div>
+        <p>Angry</p>
+        <div class="progress">
+            <div class="progress-bar bg-danger" id="anger" role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+        </div>
+        <p>Sadness</p>
+        <div class="progress">
+            <div class="progress-bar bg-dark" id="sadness" role="progressbar" style="width: 0%" aria-valuenow="4" aria-valuemin="0" aria-valuemax="100"></div>
+        </div>
+        </div>
+
+</div>
+
+
+    <input type="hidden" value={{query}} id="query"/>
+</body>
+<script>
+ $(document).ready(function(){
+ $('#myspinner').addClass('spinner');
+    var query = $('#query').val()
+    console.log(query)
+    if(query[0] == '#')
+        query = query.slice(1)
+    console.log(query)
+
+    $.ajax({
+        type:"GET",
+        contentType: "application/json; charset=utf-8",
+        url: "tweets/" + query,
+        success:function(result){
+            tweets = result['tweets']
+            console.log(tweets)
+            $('#load2').hide();
+            $('#tweets').show();
+            for(var i in tweets){
+            $('#tweets').append('<p class="card-text">' + tweets[i].text + '</p>')
+            }
+
+
+            var people = result['people']
+            for(var i in people){
+            $('#people').append('<h6>' + people[i] + '</h5>')
+            }
+
+            var place = result['places']
+            for(var i in place){
+            $('#place').append('<h6>' + place[i] + '</h5>')
+            }
+
+            var org = result['org']
+            for(var i in org){
+            $('#org').append('<h6>' + org[i] + '</h5>')
+            }
+
+            $('#load1').hide();
+            $('#entity').show();
+        }
+
+        });
+
+        $.ajax({
+        type: "GET",
+        contentType: "application/json; charset=utf-8",
+        url: "detail/" + query,
+        success: function (result) {
+
+            var emotion = result['emotion']
+
+            $('#fear')[0].style.width = emotion['fear'].toString() + "%"
+            $('#joy')[0].style.width = emotion['joy'].toString() + "%"
+            $('#sadness')[0].style.width = emotion['sadness'].toString() + "%"
+            $('#surprised')[0].style.width = emotion['surprise'].toString() + "%"
+            $('#anger')[0].style.width = emotion['anger'].toString() + "%"
+
+             $('#load3').hide();
+            $('#tone').show();
+
+         }
+    });
+
+
+});
+</script>
+</html>
